@@ -1,0 +1,19 @@
+{
+  "name": "gupshup-api",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "postinstall": "npm run build"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "jsonwebtoken": "^8.5.1"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.8",
+    "typescript": "^4.6.4"
+  }
+}
