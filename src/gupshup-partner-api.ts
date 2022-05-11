@@ -9,26 +9,25 @@ export class GupshupPartnerApi {
 
   constructor(private readonly email: string, private readonly password: string) {}
 
-  async login(): Promise<string> {
-    const payload = jwt.decode(this.token) as jwt.JwtPayload;
-    if (payload.exp * 1000 < Date.now()) {
-      return this.token;
+  async login(email: string, password: string): Promise<string> {
+    const payload = <jwt.JwtPayload>jwt.decode(this.token);
+    if (payload.exp * 1000 >= Date.now()) {
+      const res = await axios.post(
+        this.endpoint.concat('/account/login'),
+        new URLSearchParams({
+          email,
+          password,
+        }),
+        {
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+        },
+      );
+
+      this.token = res.data.token;
     }
 
-    const res = await axios.post(
-      this.endpoint.concat('/account/login'),
-      new URLSearchParams({
-        email: this.email,
-        password: this.password,
-      }),
-      {
-        headers: {
-          'content-type': 'application/x-www-form-urlencoded',
-        },
-      },
-    );
-
-    this.token = res.data.token;
     return this.token;
   }
 
@@ -41,7 +40,7 @@ export class GupshupPartnerApi {
       }),
       {
         headers: {
-          authorization: await this.login(),
+          authorization: await this.login(this.email, this.password),
           'content-type': 'application/x-www-form-urlencoded',
         },
       },
@@ -53,14 +52,14 @@ export class GupshupPartnerApi {
   async createToken(appId: string): Promise<string> {
     const res = await axios.get(this.endpoint.concat(`/app/${appId}/token`), {
       headers: {
-        token: await this.login(),
+        token: await this.login(this.email, this.password),
       },
     });
 
     return res.data.token.token;
   }
 
-  async setWebhook(authorization: string, appId: string, callbackUrl: string): Promise<void> {
+  async setWebhook(appId: string, apiKey: string, callbackUrl: string): Promise<void> {
     await axios.put(
       this.endpoint.concat(`/app/${appId}/callbackUrl`),
       new URLSearchParams({
@@ -68,7 +67,7 @@ export class GupshupPartnerApi {
       }),
       {
         headers: {
-          authorization,
+          authorization: apiKey,
           'content-type': 'application/x-www-form-urlencoded',
         },
       },

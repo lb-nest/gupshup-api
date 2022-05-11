@@ -7,7 +7,7 @@ export class GupshupClientApi {
   constructor(
     private readonly source: string,
     private readonly sourceName: string,
-    private readonly token: string,
+    private readonly apiKey: string,
   ) {}
 
   async sendMessage(destination: string, message: Message): Promise<string> {
@@ -22,7 +22,7 @@ export class GupshupClientApi {
       }),
       {
         headers: {
-          apikey: this.token,
+          apiKey: this.apiKey,
           'content-type': 'application/x-www-form-urlencoded',
         },
       },
