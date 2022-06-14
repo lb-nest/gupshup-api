@@ -94,10 +94,10 @@ export class GupshupPartnerApi {
    * This api will provide the access token for accessing particular app.
    * You can use this token to get app’s templates , submit templates, send messages etc.
    */
-  async getAccessToken(appId: string): Promise<string> {
+  async getAccessToken(token: string, appId: string): Promise<string> {
     const res = await this.axios.get(`/app/${appId}/token`, {
       headers: {
-        token: await this.getPartnerToken(this.email, this.password),
+        token,
       },
     });
 
@@ -315,15 +315,10 @@ export class GupshupPartnerApi {
   /**
    * Using this API you can get the daily discount, daily bill, and the cumulative bill for a particular app ranging a month.
    */
-  async getAppDailyDiscount(
-    token: string,
-    appId: string,
-    year: number,
-    month: number,
-  ): Promise<Discount[]> {
+  async getAppDailyDiscount(token: string, appId: string, date: Date): Promise<Discount[]> {
     const query = new URLSearchParams({
-      month: String(month).padStart(2, '0'),
-      year: String(year).padStart(4, '0'),
+      month: format(date, 'MM'),
+      year: format(date, 'yyyy'),
     });
 
     const res = await this.axios.get(`/app/${appId}/discount?${query}`, {
