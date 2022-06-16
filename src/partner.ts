@@ -4,7 +4,7 @@ import { decode, JwtPayload } from 'jsonwebtoken';
 import { App, Discount, Rating, Status, Template, Usage, Wallet } from './types';
 
 /**
- * https://www.gupshup.io/docs/partner/#jump-TokenApis-Partner_7CGetPartnerToken
+ * https://www.gupshup.io/docs/partner/
  */
 export class GupshupPartnerApi {
   private readonly axios: AxiosInstance;
