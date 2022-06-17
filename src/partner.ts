@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
-import { format } from 'date-fns';
-import { decode, JwtPayload } from 'jsonwebtoken';
-import { App, Discount, Rating, Status, Template, Usage, Wallet } from './types';
+import jwtDecode from 'jwt-decode';
+import { formatDate } from './helpers/format-date';
+import { App, Discount, DlrEvent, Rating, Status, Template, Usage, Wallet } from './types';
 
 /**
  * https://www.gupshup.io/docs/partner/
@@ -23,10 +23,14 @@ export class GupshupPartnerApi {
   /**
    * Here you can create a template for a particular app.
    */
-  async applyForTemplates(appId: string, template: Record<string, any>): Promise<Template> {
+  async applyForTemplates(
+    token: string,
+    appId: string,
+    template: Record<string, any>,
+  ): Promise<Template> {
     const res = await this.axios.post(`/app/${appId}/templates`, new URLSearchParams(template), {
       headers: {
-        token: await this.getPartnerToken(this.email, this.password),
+        token,
       },
     });
 
@@ -38,7 +42,12 @@ export class GupshupPartnerApi {
    * Using the handleId, you can create and submit a template along with a sample media.
    * The handleId is passed in the exampleMedia parameter of the Apply for templates with sample media API.
    */
-  async getHandleIdForSampleMedia(appId: string, file: string, fileId: string): Promise<string> {
+  async getHandleIdForSampleMedia(
+    token: string,
+    appId: string,
+    file: string,
+    fileId: string,
+  ): Promise<string> {
     const res = await this.axios.post(
       `/app/${appId}/upload/media`,
       new URLSearchParams({
@@ -47,7 +56,7 @@ export class GupshupPartnerApi {
       }),
       {
         headers: {
-          token: await this.getPartnerToken(this.email, this.password),
+          token,
         },
       },
     );
@@ -59,20 +68,24 @@ export class GupshupPartnerApi {
    * This will provide you the list of templates for a particular app.
    * You will also get the rejection reason for templates.
    */
-  async getTemplates(appId: string): Promise<Template[]> {
+  async getTemplates(token: string, appId: string): Promise<Template[]> {
     const res = await this.axios.get(`/app/${appId}/templates`, {
       headers: {
-        token: await this.getPartnerToken(this.email, this.password),
+        token,
       },
     });
 
     return res.data.templates;
   }
 
-  async sendMessageWithTemplateId(appId: string, message: Record<string, any>): Promise<string> {
+  async sendMessageWithTemplateId(
+    token: string,
+    appId: string,
+    message: Record<string, any>,
+  ): Promise<string> {
     const res = await this.axios.post(`/app/${appId}/template/msg`, new URLSearchParams(message), {
       headers: {
-        token: await this.getPartnerToken(this.email, this.password),
+        token,
       },
     });
 
@@ -82,10 +95,10 @@ export class GupshupPartnerApi {
   /**
    * Using this API, you can delete a template using the elementName for it.
    */
-  async deleteTemplate(appId: string, elementName: string): Promise<void> {
+  async deleteTemplate(token: string, appId: string, elementName: string): Promise<void> {
     await this.axios.delete(`/app/${appId}/template/${elementName}`, {
       headers: {
-        token: await this.getPartnerToken(this.email, this.password),
+        token,
       },
     });
   }
@@ -94,10 +107,10 @@ export class GupshupPartnerApi {
    * This api will provide the access token for accessing particular app.
    * You can use this token to get app’s templates , submit templates, send messages etc.
    */
-  async getAccessToken(token: string, appId: string): Promise<string> {
+  async getAccessToken(appId: string): Promise<string> {
     const res = await this.axios.get(`/app/${appId}/token`, {
       headers: {
-        token,
+        token: await this.getPartnerToken(this.email, this.password),
       },
     });
 
@@ -109,7 +122,7 @@ export class GupshupPartnerApi {
    * Currently expirey for the token is 24 hours.
    */
   async getPartnerToken(email: string, password: string): Promise<string> {
-    const payload = <JwtPayload>decode(this.token);
+    const payload = jwtDecode<any>(this.token);
 
     if (!payload || payload.exp * 1000 >= Date.now()) {
       const res = await this.axios.post(
@@ -126,7 +139,12 @@ export class GupshupPartnerApi {
     return this.token;
   }
 
-  async blockUser(appId: string, phone: string, isBlocked: boolean = true): Promise<void> {
+  async blockUser(
+    token: string,
+    appId: string,
+    phone: string,
+    isBlocked: boolean = true,
+  ): Promise<void> {
     await this.axios.put(
       `/app/${appId}/block`,
       new URLSearchParams({
@@ -135,7 +153,7 @@ export class GupshupPartnerApi {
       }),
       {
         headers: {
-          token: await this.getPartnerToken(this.email, this.password),
+          token,
         },
       },
     );
@@ -144,51 +162,55 @@ export class GupshupPartnerApi {
   /**
    * Using this API, you can enable or disable template messaging for an App.
    */
-  async toggleTemplateMessaging(appId: string, isHsmEnabled: boolean): Promise<void> {
+  async toggleTemplateMessaging(
+    token: string,
+    appId: string,
+    isHSMEnabled: boolean,
+  ): Promise<void> {
     await this.axios.put(
       `/app/${appId}/appPreference`,
       new URLSearchParams({
-        isHSMEnabled: String(isHsmEnabled),
+        isHSMEnabled: String(isHSMEnabled),
       }),
       {
         headers: {
-          token: await this.getPartnerToken(this.email, this.password),
+          token,
         },
       },
     );
   }
 
-  async checkHealth(appId: string): Promise<boolean> {
+  async checkHealth(token: string, appId: string): Promise<boolean> {
     const res = await this.axios.get(`/app/${appId}/health`, {
       headers: {
-        token: await this.getPartnerToken(this.email, this.password),
+        token,
       },
     });
 
     return res.data.healthy;
   }
 
-  async getUserStatus(appId: string, phone: string): Promise<Status> {
+  async getUserStatus(token: string, appId: string, phone: string): Promise<Status> {
     const res = await this.axios.get(`/app/${appId}/userStatus?phone=${phone}`, {
       headers: {
-        token: await this.getPartnerToken(this.email, this.password),
+        token,
       },
     });
 
     return res.data.userStatus;
   }
 
-  async getWalletBalance(appId: string): Promise<Wallet> {
+  async getWalletBalance(token: string, appId: string): Promise<Wallet> {
     const res = await this.axios.get(`/app/${appId}/wallet/balance`, {
       headers: {
-        token: await this.getPartnerToken(this.email, this.password),
+        token,
       },
     });
 
     return res.data.walletResponse;
   }
 
-  async optinAppUser(appId: string, phone: string): Promise<void> {
+  async optinAppUser(token: string, appId: string, phone: string): Promise<void> {
     await this.axios.put(
       `/app/${appId}/optin`,
       new URLSearchParams({
@@ -196,7 +218,7 @@ export class GupshupPartnerApi {
       }),
       {
         headers: {
-          token: await this.getPartnerToken(this.email, this.password),
+          token,
         },
       },
     );
@@ -206,10 +228,10 @@ export class GupshupPartnerApi {
    * You can use this API to check the Quality Rating, and Messaging Limits of your App.
    * For an App, API requests are limited to once every 24 hours.
    */
-  async checkQualityRatingAndMessagingLimits(appId: string): Promise<Rating> {
+  async checkQualityRatingAndMessagingLimits(token: string, appId: string): Promise<Rating> {
     const res = await this.axios.get(`/app/${appId}/ratings`, {
       headers: {
-        token: await this.getPartnerToken(this.email, this.password),
+        token,
       },
     });
 
@@ -249,7 +271,7 @@ export class GupshupPartnerApi {
   /**
    * https://www.gupshup.io/developer/docs/bot-platform/guide/whatsapp-api-documentation#setupcallbackURL
    */
-  async setCallbackUrl(appId: string, callbackUrl: string): Promise<void> {
+  async setCallbackUrl(token: string, appId: string, callbackUrl: string): Promise<void> {
     await this.axios.put(
       `/app/${appId}/callbackUrl`,
       new URLSearchParams({
@@ -257,7 +279,7 @@ export class GupshupPartnerApi {
       }),
       {
         headers: {
-          token: await this.getPartnerToken(this.email, this.password),
+          token,
         },
       },
     );
@@ -266,7 +288,7 @@ export class GupshupPartnerApi {
   /**
    * Using this API, you can update the gupshup fee cap for an app.
    */
-  async updateCapping(appId: string, cap: number): Promise<void> {
+  async updateCapping(token: string, appId: string, cap: number): Promise<void> {
     await this.axios.put(
       `/app/${appId}/capping`,
       new URLSearchParams({
@@ -274,7 +296,7 @@ export class GupshupPartnerApi {
       }),
       {
         headers: {
-          token: await this.getPartnerToken(this.email, this.password),
+          token,
         },
       },
     );
@@ -283,14 +305,14 @@ export class GupshupPartnerApi {
   /**
    * Using this API you can get the inbound message logs for the specified duration.
    */
-  async getInboundMessageEventLogs(token: string): Promise<any> {
+  async getInboundMessageEventLogs(): Promise<unknown> {
     throw new Error('Not Implemented');
   }
 
   /**
    * Using this API you can get the outbound message logs for the specified date.
    */
-  async getOutboundMessageEventLogs(token: string): Promise<any> {
+  async getOutboundMessageEventLogs(): Promise<unknown> {
     throw new Error('Not Implemented');
   }
 
@@ -299,8 +321,8 @@ export class GupshupPartnerApi {
    */
   async getAppUsage(token: string, appId: string, from: Date, to: Date): Promise<Usage> {
     const query = new URLSearchParams({
-      from: format(from, 'yyyy-MM-dd'),
-      to: format(to, 'yyyy-MM-dd'),
+      from: formatDate(from),
+      to: formatDate(to),
     });
 
     const res = await this.axios.get(`/app/${appId}/usage?${query}`, {
@@ -317,8 +339,8 @@ export class GupshupPartnerApi {
    */
   async getAppDailyDiscount(token: string, appId: string, date: Date): Promise<Discount[]> {
     const query = new URLSearchParams({
-      month: format(date, 'MM'),
-      year: format(date, 'yyyy'),
+      month: date.getMonth().toString().padStart(2, '0'),
+      year: date.getFullYear().toString(),
     });
 
     const res = await this.axios.get(`/app/${appId}/discount?${query}`, {
@@ -356,15 +378,11 @@ export class GupshupPartnerApi {
    * You may provide all the values for which you want to receive events.
    * If no values are provided, all events will be deselected.
    */
-  async updateDlrEvents(
-    token: string,
-    appId: string,
-    modes: 'DELIVERED' | 'READ' | 'SENT' | 'DELETED' | 'OTHERS' | 'TEMPLATE' | 'ACCOUNT',
-  ): Promise<void> {
+  async updateDlrEvents(token: string, appId: string, ...modes: DlrEvent[]): Promise<void> {
     await this.axios.put(
       `/app/${appId}/callback/mode`,
       new URLSearchParams({
-        modes,
+        modes: modes.length ? modes.join(',') : undefined,
       }),
       {
         headers: {
