@@ -105,7 +105,7 @@ export class GupshupPartnerApi {
 
   /**
    * This api will provide the access token for accessing particular app.
-   * You can use this token to get app’s templates , submit templates, send messages etc.
+   * You can use this token to get app’s templates, submit templates, send messages etc.
    */
   async getAccessToken(appId: string): Promise<string> {
     const res = await this.axios.get(`/app/${appId}/token`, {
