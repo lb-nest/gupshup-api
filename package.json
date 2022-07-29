@@ -14,7 +14,8 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "microbundle",
-    "start:watch": "microbundle watch"
+    "start:watch": "microbundle watch",
+    "test": "echo \"Warning: no test specified\""
   },
   "dependencies": {
     "axios": "^0.27.2",
