@@ -29,6 +29,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
           scope: '@lb-nest'
       - run: yarn
-      - run: yarn publish
+      - run: yarn publish --access=public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
