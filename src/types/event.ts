@@ -1,6 +1,6 @@
 export type DlrEvent =
-  | 'DELIVERED'
   | 'READ'
+  | 'DELIVERED'
   | 'SENT'
   | 'DELETED'
   | 'OTHERS'

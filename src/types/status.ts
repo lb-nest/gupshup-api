@@ -1,9 +1,9 @@
-export interface Status {
+export interface UserStatus {
   active: boolean;
   appId: string;
   blocked: boolean;
   countryCode: string;
   dialCode: string;
   phone: string;
-  status: string;
+  status: 'OPT_IN';
 }
