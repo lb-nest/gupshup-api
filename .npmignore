@@ -1,2 +1,5 @@
-# source code
+/.github
+/.husky
 /src
+.gitignore
+tsconfig.json
