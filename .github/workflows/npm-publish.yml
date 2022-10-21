@@ -17,8 +17,8 @@ jobs:
           node-version: 16
           registry-url: https://registry.npmjs.org/
           scope: '@lb-nest'
-      - run: yarn --immutable --immutable-cache --check-cache
-      - run: yarn build
-      - run: yarn publish --access=public
+      - run: npm ci
+      - run: npm run build
+      - run: npm publish --access=public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
