@@ -103,7 +103,7 @@ export class GupshupPartnerApi {
     token: string,
     appId: string,
     message: {
-      id: number;
+      id: string;
       params: string[];
     },
   ): Promise<string> {

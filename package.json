@@ -1,6 +1,6 @@
 {
   "name": "@lb-nest/gupshup-api",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "type": "module",
   "source": "src/index.ts",
   "exports": {
