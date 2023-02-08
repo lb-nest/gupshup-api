@@ -161,7 +161,7 @@ export class GupshupPartnerApi {
    * Currently expirey for the token is 24 hours.
    */
   async getPartnerToken(email: string, password: string): Promise<string> {
-    if (!this.token || jwtDecode<{ exp: number }>(this.token).exp * 1000 - Date.now() > 0) {
+    if (!this.token || jwtDecode<{ exp: number }>(this.token).exp * 1000 - Date.now() < 0) {
       const res = await this.axios.post(
         '/account/login',
         new URLSearchParams({
